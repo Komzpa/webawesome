@@ -375,9 +375,6 @@ export default class WaTabGroup extends WebAwesomeElement {
     this.tabs = this.getAllTabs();
     this.focusableTabs = this.tabs.filter(el => !el.disabled);
     this.panels = this.getAllPanels();
-    if (!this.hasIntersected && this.isInViewport()) {
-      this.hasIntersected = true;
-    }
     if (this.activeTab) {
       this.panels.forEach(panel => (panel.active = panel.name === this.activeTab?.panel));
     } else {
@@ -386,21 +383,6 @@ export default class WaTabGroup extends WebAwesomeElement {
 
     // After updating, show or hide scroll controls as needed
     this.updateComplete.then(() => this.updateScrollControls());
-  }
-
-  private isInViewport() {
-    let element: HTMLElement | null = this;
-
-    while (element) {
-      const style = getComputedStyle(element);
-      if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') {
-        return false;
-      }
-      element = element.parentElement;
-    }
-
-    const rect = this.getBoundingClientRect();
-    return rect.right >= 0 && rect.bottom >= 0 && rect.left <= window.innerWidth && rect.top <= window.innerHeight;
   }
 
   private setInitialTabState() {
