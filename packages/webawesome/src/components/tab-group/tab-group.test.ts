@@ -168,6 +168,47 @@ describe('<wa-tab-group>', () => {
           const activeTab = getActiveTab(tabGroup);
           expect(activeTab!.panel).to.equal('custom');
         });
+
+        it('should initialize late tabs and activate their panels when panels arrive later', async () => {
+          const tabGroup = await fixture<WaTabGroup>(html`<wa-tab-group active="custom"></wa-tab-group>`);
+          await aTimeout(50);
+
+          tabGroup.insertAdjacentHTML(
+            'beforeend',
+            '<wa-tab slot="nav" panel="general">General</wa-tab><wa-tab slot="nav" panel="custom">Custom</wa-tab>',
+          );
+          await waitUntil(() => getActiveTab(tabGroup)?.panel === 'custom');
+
+          await clickOnElement(tabGroup.querySelector<WaTab>('wa-tab[panel="general"]')!);
+          await waitUntil(() => getActiveTab(tabGroup)?.panel === 'general');
+          tabGroup.insertAdjacentHTML(
+            'beforeend',
+            '<wa-tab-panel name="general">General content</wa-tab-panel><wa-tab-panel name="custom">Custom content</wa-tab-panel>',
+          );
+
+          await waitUntil(() => getActivePanel(tabGroup)?.name === 'general');
+          expect(getActiveTab(tabGroup)!.panel).to.equal('general');
+          expect(getActivePanel(tabGroup)!.name).to.equal('general');
+        });
+
+        it('should activate the first enabled panel when panels arrive after tabs', async () => {
+          const tabGroup = await fixture<WaTabGroup>(html`<wa-tab-group></wa-tab-group>`);
+          await aTimeout(50);
+
+          tabGroup.insertAdjacentHTML(
+            'beforeend',
+            '<wa-tab slot="nav" panel="disabled" disabled>Disabled</wa-tab><wa-tab slot="nav" panel="general">General</wa-tab>',
+          );
+          await waitUntil(() => getActiveTab(tabGroup)?.panel === 'general');
+          tabGroup.insertAdjacentHTML(
+            'beforeend',
+            '<wa-tab-panel name="disabled">Disabled content</wa-tab-panel><wa-tab-panel name="general">General content</wa-tab-panel>',
+          );
+
+          await waitUntil(() => getActivePanel(tabGroup)?.name === 'general');
+          expect(getActiveTab(tabGroup)!.panel).to.equal('general');
+          expect(getActivePanel(tabGroup)!.name).to.equal('general');
+        });
       });
 
       describe('events', () => {
